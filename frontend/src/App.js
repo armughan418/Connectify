@@ -10,16 +10,18 @@ import Super from "./components/super";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import NotFound from "./pages/notFound";
 
 function App() {
   return (
     <>
       <Routes>
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/forget-password" element={<ForgetPassword />} />
         <Route path="/otp-verification" element={<Otp />} />
         <Route path="/update-password" element={<UpdatePassword />} />
+        <Route path="*" element={<NotFound />} />
         <Route element={<Super />}>
           <Route path="/home" element={<Home />} />
         </Route>

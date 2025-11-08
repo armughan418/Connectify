@@ -42,24 +42,26 @@ function UpdatePassword() {
         toast.success("Password updated successfully!");
         localStorage.removeItem("resetToken");
         localStorage.removeItem("resetEmail");
-        setTimeout(() => navigate("/login"), 1500);
+        setTimeout(() => navigate("/"), 1500);
       } else {
-        toast.error(`${data.message || "Failed to update password"}`);
+        toast.error(data.message || "Failed to update password");
       }
     } catch (error) {
-      toast.error("Server error, please try again later." || error.message);
+      toast.error(error.message || "Server error, please try again later.");
     }
+
     setPassword("");
     setConfirmPassword("");
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
-      <div className="backdrop-blur-md bg-white/20 shadow-2xl rounded-3xl p-8 w-full max-w-md border border-white/30">
-        <h2 className="text-3xl font-extrabold text-center mb-6 text-white drop-shadow-lg">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-purple-500 via-pink-500 to-red-500">
+      {/* Gradient Box with Shadow */}
+      <div className="bg-gradient-to-r from-purple-400 via-pink-400 to-red-400 rounded-3xl shadow-2xl p-8 w-full max-w-md text-center">
+        <h2 className="text-3xl font-extrabold text-white mb-6 drop-shadow-lg">
           Reset Password
         </h2>
-        <p className="text-center text-pink-100 mb-6">
+        <p className="text-white/90 mb-6">
           Set a new password for <b>{email}</b>
         </p>
 
@@ -69,27 +71,25 @@ function UpdatePassword() {
             placeholder="New Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3 rounded-lg bg-white/30 border border-white/40 text-white placeholder-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-400"
+            className="w-full px-4 py-3 rounded-lg bg-white/30 border border-white/40 text-white placeholder-pink-200 focus:outline-none focus:ring-2 focus:ring-white transition"
           />
           <input
             type="password"
             placeholder="Confirm New Password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full px-4 py-3 rounded-lg bg-white/30 border border-white/40 text-white placeholder-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-400"
+            className="w-full px-4 py-3 rounded-lg bg-white/30 border border-white/40 text-white placeholder-pink-200 focus:outline-none focus:ring-2 focus:ring-white transition"
           />
 
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold py-3 rounded-lg hover:scale-105 transition-transform duration-200 shadow-lg"
+            className="w-full bg-white text-purple-700 font-semibold py-3 rounded-lg hover:scale-105 transition-transform duration-200 shadow-lg"
           >
             Update Password
           </button>
         </form>
 
-        {message && (
-          <p className="text-center mt-4 text-white font-medium">{message}</p>
-        )}
+        {message && <p className="text-white mt-4 font-medium">{message}</p>}
       </div>
     </div>
   );

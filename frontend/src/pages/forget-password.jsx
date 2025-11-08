@@ -21,9 +21,7 @@ function ForgetPassword() {
     try {
       const response = await fetch(api().forgetPassword, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
 
@@ -46,13 +44,14 @@ function ForgetPassword() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
-      <div className="backdrop-blur-md bg-white/20 shadow-2xl rounded-3xl p-8 w-full max-w-md border border-white/30">
-        <h2 className="text-3xl font-extrabold text-center mb-6 text-white drop-shadow-lg">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-purple-500 via-pink-500 to-red-500">
+      {/* Gradient Box with Shadow */}
+      <div className="bg-gradient-to-r from-purple-400 via-pink-400 to-red-400 rounded-3xl shadow-2xl p-8 w-full max-w-md text-center">
+        <h2 className="text-3xl font-extrabold text-white mb-6 drop-shadow-lg">
           Forgot Password
         </h2>
 
-        <p className="text-center text-pink-100 mb-6">
+        <p className="text-white/90 mb-6">
           Enter your registered email to reset your password
         </p>
 
@@ -62,28 +61,26 @@ function ForgetPassword() {
             value={email}
             onChange={changeEmail}
             placeholder="Enter your email"
-            className="w-full px-4 py-3 mb-6 rounded-lg bg-white/30 border border-white/40 text-white placeholder-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-400 transition"
+            className="w-full px-4 py-3 mb-6 rounded-lg bg-white/30 border border-white/40 text-white placeholder-gray-200 focus:outline-none focus:ring-2 focus:ring-white transition"
             required
           />
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold py-3 rounded-lg hover:scale-105 transition-transform duration-200 shadow-lg disabled:opacity-50"
+            className="w-full bg-white text-purple-700 font-semibold py-3 rounded-lg hover:scale-105 transition-transform duration-200 shadow-lg disabled:opacity-50"
           >
             {loading ? "Sending..." : "Submit"}
           </button>
         </form>
 
-        {message && (
-          <p className="text-center mt-4 text-white font-medium">{message}</p>
-        )}
+        {message && <p className="text-white mt-4 font-medium">{message}</p>}
 
         <div className="flex justify-center mt-4 text-sm">
-          <p className="text-pink-200">
+          <p className="text-white/80">
             Remember your password?{" "}
             <button
-              className="text-white font-semibold hover:underline"
+              className="font-semibold hover:underline"
               onClick={() => navigate("/login")}
             >
               Login
