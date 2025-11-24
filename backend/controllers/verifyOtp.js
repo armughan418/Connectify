@@ -1,40 +1,32 @@
-const crypto = require("crypto");
 const User = require("../models/user");
 
 const verifyOtp = async (req, res) => {
   const { email, otp } = req.body;
 
   try {
-    const findedUser = await User.findOne({
-      email,
-      "otp.otp": otp.toString(),
-    });
+    const formattedEmail = email.toLowerCase();
+    const user = await User.findOne({ email: formattedEmail });
+    if (!user || !user.otp)
+      return res
+        .status(400)
+        .json({ message: "Invalid request", status: false });
 
-    if (!findedUser) {
-      return res.status(400).json({ message: "Invalid OTP" });
+    if (user.otp.tokenExpiry < Date.now()) {
+      return res.status(400).json({ message: "OTP expired", status: false });
     }
 
-    const expiryTime =
-      new Date(findedUser.otp.sendTime).getTime() + 5 * 60 * 1000;
-    if (Date.now() > expiryTime) {
-      return res.status(400).json({ message: "OTP Expired" });
+    if (user.otp.otp !== otp) {
+      return res.status(400).json({ message: "Incorrect OTP", status: false });
     }
 
-    findedUser.otp.otp = null;
-    const resetToken = crypto.randomBytes(20).toString("hex");
-    findedUser.otp.token = resetToken;
-    findedUser.otp.sendTime = new Date();
-    await findedUser.save();
-
-    return res.status(200).json({
-      message: "OTP verified successfully",
+    res.status(200).json({
+      message: "OTP verified",
       status: true,
-      token: resetToken,
-      email: email,
+      token: user.otp.token,
+      email: user.email,
     });
   } catch (error) {
-    console.error("OTP Verification Error:", error);
-    return res.status(500).json({ message: "Server Error" });
+    res.status(500).json({ message: error.message, status: false });
   }
 };
 

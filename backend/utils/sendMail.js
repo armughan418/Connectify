@@ -1,23 +1,23 @@
-const nodeMailer = require("nodemailer");
+const nodemailer = require("nodemailer");
 
-const sendMail = async (otp, mail) => {
+const sendEmail = async (to, subject, html) => {
   try {
-    const transport = nodeMailer.createTransport({
+    const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: process.env.Email,
-        pass: process.env.App_Pass,
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
       },
     });
 
     const mailOptions = {
-      from: process.env.Email,
-      to: mail,
-      subject: "Reset Password OTP",
-      text: `Your OTP for password reset is ${otp}. It is valid for 1 minutes.`,
+      from: `"Shopverse" <${process.env.SMTP_USER}>`,
+      to,
+      subject,
+      html,
     };
 
-    const info = await transport.sendMail(mailOptions);
+    const info = await transporter.sendMail(mailOptions);
     console.log("Email sent:", info.response);
     return true;
   } catch (error) {
@@ -26,4 +26,4 @@ const sendMail = async (otp, mail) => {
   }
 };
 
-module.exports = sendMail;
+module.exports = sendEmail;

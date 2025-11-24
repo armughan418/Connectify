@@ -2,40 +2,80 @@ const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-const login = async (req, res, next) => {
-  const { email, password } = req.body;
-  try {
-    const formattedEmail = email.toLowerCase();
-    const findedUser = await User.findOne({ email: formattedEmail });
+const login = async (req, res) => {
+  const { email, password, role } = req.body;
 
-    if (!findedUser) {
-      return res.status(400).json({ status: false, message: "User not found" });
+  try {
+    if (!email || !password) {
+      return res.status(400).json({
+        status: false,
+        message: "Email and password are required",
+      });
     }
 
-    const isPasswordCorrect = await bcrypt.compare(
-      password,
-      findedUser.password
-    );
+    const formattedEmail = email.toLowerCase();
+    const user = await User.findOne({ email: formattedEmail });
+
+    if (!user) {
+      return res.status(404).json({
+        status: false,
+        message: "User not found",
+      });
+    }
+
+    if (role && role !== user.role) {
+      return res.status(403).json({
+        status: false,
+        message: "Invalid role selected",
+      });
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) {
-      return res
-        .status(400)
-        .json({ status: false, message: "Invalid Password" });
+      return res.status(401).json({
+        status: false,
+        message: "Invalid password",
+      });
     }
 
     const accessToken = jwt.sign(
-      { email: formattedEmail, userId: findedUser._id },
+      {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+        isAdmin: user.role === "admin",
+      },
       process.env.ACCESS_TOKEN_KEY,
       { expiresIn: "7d" }
     );
 
+    if (user.role === "user") {
+      res.cookie("token", accessToken, {
+        httpOnly: true,
+        sameSite: "strict",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+    }
+
     res.status(200).json({
       status: true,
-      message: "Login Successful",
+      message: "Login successful",
       token: accessToken,
-      user: { id: findedUser._id, email: findedUser.email },
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isAdmin: user.role === "admin",
+      },
     });
   } catch (error) {
-    next(error);
+    console.error("Login Error:", error);
+    res.status(500).json({
+      status: false,
+      message: "Server error during login",
+    });
   }
 };
 

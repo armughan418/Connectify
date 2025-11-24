@@ -1,40 +1,47 @@
 const User = require("../models/user");
 const crypto = require("crypto");
-const sendMail = require("../utils/sendMail");
+const sendOtpEmail = require("../utils/otpMail");
 
 const forgetPassword = async (req, res) => {
   const { email } = req.body;
-  try {
-    const findedUser = await User.findOne({ email });
-    if (!findedUser) {
-      return res.status(404).json({ message: "No user found" });
-    }
 
-    if (findedUser.otp && findedUser.otp.sendTime > Date.now()) {
+  try {
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
       return res.status(400).json({
-        message: `Please wait until ${new Date(
-          findedUser.otp.sendTime
-        ).toLocaleTimeString()}`,
+        message: "User not found with this email",
+        status: false,
       });
     }
 
-    const otp = Math.floor(1000 + Math.random() * 9000);
-    console.log("Generated OTP:", otp);
+    const otp = crypto.randomInt(100000, 999999).toString();
+    const sendTime = Date.now();
+    const resetToken = crypto.randomBytes(20).toString("hex");
+    const tokenExpiry = sendTime + 1 * 60 * 1000;
 
-    findedUser.otp = {
-      otp: otp,
-      sendTime: Date.now() + 1 * 60 * 1000,
-      token: crypto.randomBytes(32).toString("hex"),
-    };
+    user.otp = { otp, sendTime, token: resetToken, tokenExpiry };
+    await user.save();
 
-    await findedUser.save();
+    const mailSent = await sendOtpEmail(otp, user.email);
 
-    await sendMail(otp, email);
+    if (!mailSent) {
+      return res.status(500).json({
+        message: "Failed to send OTP email",
+        status: false,
+      });
+    }
 
-    res.status(200).json({ message: "OTP sent to your email" });
+    res.status(200).json({
+      message: "OTP sent successfully to your email",
+      status: true,
+      email: user.email,
+    });
   } catch (error) {
-    console.error("Forget Password Error:", error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Error in forgetPassword:", error);
+    res.status(500).json({
+      message: "Server error while sending OTP",
+      status: false,
+    });
   }
 };
 

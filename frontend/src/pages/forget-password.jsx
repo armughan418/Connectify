@@ -1,95 +1,107 @@
+// src/pages/ForgetPassword.jsx
 import React, { useState } from "react";
-import api from "../utils/api";
 import { useNavigate } from "react-router-dom";
+import api from "../utils/api";
 import { toast } from "react-toastify";
 
 function ForgetPassword() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
 
-  const changeEmail = (e) => {
-    setEmail(e.target.value);
-  };
-
-  const handleSubmit = async (e) => {
+  const handleSendOtp = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setMessage("");
+    if (!email) return toast.error("Please enter your registered email");
 
+    setLoading(true);
     try {
-      const response = await fetch(api().forgetPassword, {
+      const res = await fetch(api().forgetPassword, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
+      const data = await res.json();
 
-      const data = await response.json();
-
-      if (response.ok) {
-        toast.success("OTP sent to your Email");
-        setTimeout(() => {
-          navigate("/otp-verification", { state: { email } });
-        }, 1000);
+      if (res.ok && data.status) {
+        toast.success(data.message || "OTP sent to your email");
+        localStorage.setItem("resetEmail", data.email || email);
+        setOtpSent(true);
       } else {
-        toast.error(`${data.message || "Something went wrong"}`);
+        toast.error(data.message || "Failed to send OTP");
       }
-    } catch (error) {
-      toast.error("Server error, try again later.");
+    } catch (err) {
+      console.error(err);
+      toast.error("Server error. Try again later.");
     } finally {
       setLoading(false);
     }
-    setEmail("");
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-purple-500 via-pink-500 to-red-500">
-      {/* Gradient Box with Shadow */}
-      <div className="bg-gradient-to-r from-purple-400 via-pink-400 to-red-400 rounded-3xl shadow-2xl p-8 w-full max-w-md text-center">
-        <h2 className="text-3xl font-extrabold text-white mb-6 drop-shadow-lg">
-          Forgot Password
-        </h2>
+    <div className="flex h-screen bg-orange-50">
+      <div className="m-auto max-w-md w-full p-6">
+        <div className="bg-white rounded-2xl shadow p-8 border-l-4 border-orange-500">
+          <h2 className="text-2xl font-bold text-orange-600 mb-4">
+            Forgot Password
+          </h2>
+          <p className="text-sm text-gray-600 mb-6">
+            Enter your registered email to receive an OTP.
+          </p>
 
-        <p className="text-white/90 mb-6">
-          Enter your registered email to reset your password
-        </p>
+          {!otpSent ? (
+            <form onSubmit={handleSendOtp} className="space-y-4">
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-3 rounded-lg border border-orange-200 bg-orange-50 focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
+                required
+              />
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-orange-600 text-white py-2 rounded-lg"
+              >
+                {loading ? "Sending..." : "Send OTP"}
+              </button>
+            </form>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-sm text-green-600">OTP sent to your email.</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => navigate("/otp-verification")}
+                  className="flex-1 bg-orange-600 text-white py-2 rounded-lg"
+                >
+                  Verify OTP
+                </button>
+                <button
+                  onClick={() => {
+                    setOtpSent(false);
+                    localStorage.removeItem("resetEmail");
+                  }}
+                  className="flex-1 border border-gray-300 py-2 rounded-lg"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
 
-        <form onSubmit={handleSubmit}>
-          <input
-            type="email"
-            value={email}
-            onChange={changeEmail}
-            placeholder="Enter your email"
-            className="w-full px-4 py-3 mb-6 rounded-lg bg-white/30 border border-white/40 text-white placeholder-gray-200 focus:outline-none focus:ring-2 focus:ring-white transition"
-            required
-          />
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-white text-purple-700 font-semibold py-3 rounded-lg hover:scale-105 transition-transform duration-200 shadow-lg disabled:opacity-50"
-          >
-            {loading ? "Sending..." : "Submit"}
-          </button>
-        </form>
-
-        {message && <p className="text-white mt-4 font-medium">{message}</p>}
-
-        <div className="flex justify-center mt-4 text-sm">
-          <p className="text-white/80">
-            Remember your password?{" "}
+          <div className="mt-4 text-sm text-gray-500">
+            Remembered?{" "}
             <button
-              className="font-semibold hover:underline"
               onClick={() => navigate("/login")}
+              className="text-orange-600 underline"
             >
               Login
             </button>
-          </p>
+          </div>
         </div>
       </div>
     </div>
   );
 }
-
 export default ForgetPassword;
