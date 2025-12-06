@@ -42,25 +42,47 @@ function Checkout() {
         localStorage.setItem("user", JSON.stringify(userData));
       } else {
         // fallback to localStorage
-        const localUser = JSON.parse(localStorage.getItem("user")) || {};
+        try {
+          const userStr = localStorage.getItem("user");
+          const localUser = userStr ? JSON.parse(userStr) : {};
+          setUser({
+            name: localUser.name || "Not provided",
+            email: localUser.email || "Not provided",
+            phone: localUser.phone || "Not provided",
+            address: localUser.address || "Not provided",
+          });
+        } catch (parseError) {
+          console.error("Error parsing user from localStorage:", parseError);
+          setUser({
+            name: "Not provided",
+            email: "Not provided",
+            phone: "Not provided",
+            address: "Not provided",
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch cart or user:", err);
+      toast.error("Failed to load cart or user data");
+
+      try {
+        const userStr = localStorage.getItem("user");
+        const localUser = userStr ? JSON.parse(userStr) : {};
         setUser({
           name: localUser.name || "Not provided",
           email: localUser.email || "Not provided",
           phone: localUser.phone || "Not provided",
           address: localUser.address || "Not provided",
         });
+      } catch (parseError) {
+        console.error("Error parsing user from localStorage:", parseError);
+        setUser({
+          name: "Not provided",
+          email: "Not provided",
+          phone: "Not provided",
+          address: "Not provided",
+        });
       }
-    } catch (err) {
-      console.error("Failed to fetch cart or user:", err);
-      toast.error("Failed to load cart or user data");
-
-      const localUser = JSON.parse(localStorage.getItem("user")) || {};
-      setUser({
-        name: localUser.name || "Not provided",
-        email: localUser.email || "Not provided",
-        phone: localUser.phone || "Not provided",
-        address: localUser.address || "Not provided",
-      });
       setCart({ items: [] });
     } finally {
       setLoading(false);

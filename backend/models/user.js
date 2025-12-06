@@ -15,6 +15,26 @@ const userSchema = new mongoose.Schema(
       token: { type: String },
       tokenExpiry: { type: Date },
     },
+    resetPassword: {
+      otp: { type: String },
+      otpSendTime: { type: Date },
+      token: { type: String },
+      otpExpiry: { type: Date },
+    },
+    friends: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    profilePhoto: {
+      type: String, // Cloudinary URL
+      default: null,
+    },
+    coverPhoto: {
+      type: String, // Cloudinary URL
+      default: null,
+    },
   },
   { timestamps: true }
 );

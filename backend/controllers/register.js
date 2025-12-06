@@ -2,14 +2,18 @@ const User = require("../models/user");
 const joi = require("joi");
 
 const register = async (req, res) => {
-  const { name, email, password, phone, address, role } = req.body;
+  const { name, email, password, phone, address } = req.body;
 
   const { error } = validateUser(req.body);
-  if (error) return res.status(400).json({ message: error.details[0].message });
+  if (error)
+    return res
+      .status(400)
+      .json({ message: error.details[0].message, status: false });
 
   try {
     const formattedEmail = email.toLowerCase();
     const existingUser = await User.findOne({ email: formattedEmail });
+
     if (existingUser)
       return res.status(400).json({ message: "User already exists" });
 
@@ -19,8 +23,9 @@ const register = async (req, res) => {
       password,
       phone,
       address,
-      role: role || "user",
+      role: "user",
     });
+
     await user.save();
 
     const userResponse = {
@@ -31,15 +36,18 @@ const register = async (req, res) => {
       address: user.address,
       role: user.role,
     };
-    res
-      .status(201)
-      .json({
-        message: "User registered successfully",
-        user: userResponse,
-        status: true,
-      });
+
+    res.status(201).json({
+      message: "User registered successfully",
+      user: userResponse,
+      status: true,
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Registration Error:", error);
+    res.status(500).json({ 
+      message: error.message || "Internal server error",
+      status: false 
+    });
   }
 };
 
@@ -51,7 +59,6 @@ function validateUser(data) {
       password: joi.string().min(6).max(12).required(),
       phone: joi.string().required(),
       address: joi.string().required(),
-      role: joi.string().valid("user", "admin").optional(),
     })
     .validate(data);
 }
