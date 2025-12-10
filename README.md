@@ -1,2 +1,3 @@
 # Connectify
-Connectify is a social media platform where users can visit, create account and login to their account by using a secure authentican system. If someone forget his/her pssword , he/she can simply click on forget password, and enter email, an OTP will be received on his Gmail.
+Connectify is a social media platform where users can browse, create an account, and securely log in using an advanced authentication system. If a user forgets their password, they can simply click on “Forgot Password,” enter their email, and receive an OTP on their Gmail to reset it.
+The platform includes all core social media features such as a home feed, user profiles, messaging, adding or removing friends, creating or deleting posts, and liking, commenting, or sharing posts. It also includes a complete Admin Panel with a dashboard, user management tools, and various settings.
