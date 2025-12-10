@@ -1,34 +1,47 @@
-// resetPassword.js
 const User = require("../models/user");
-const bcrypt = require("bcryptjs");
 
-const UpdatePassword = async (req, res) => {
+const updatePassword = async (req, res) => {
   const { email, token, password } = req.body;
 
   try {
+    if (!email || !token || !password)
+      return res.status(400).json({
+        message: "Email, token and new password are required",
+        status: false,
+      });
+
     const formattedEmail = email.toLowerCase();
+
     const user = await User.findOne({ email: formattedEmail });
-    if (!user || !user.otp)
+
+    if (!user || !user.resetPassword)
       return res
         .status(400)
         .json({ message: "Invalid request", status: false });
-    if (user.otp.token !== token)
+
+    const resetData = user.resetPassword;
+
+    if (!resetData.token || resetData.token !== token)
       return res
         .status(400)
         .json({ message: "Invalid or expired token", status: false });
 
-    // Set plain password - pre-save hook will hash it automatically
+    if (resetData.otpExpiry < Date.now())
+      return res.status(400).json({ message: "OTP expired", status: false });
+
     user.password = password;
-    // Clear OTP after successful password reset
-    user.otp = null;
+
+    user.resetPassword = undefined;
+
     await user.save();
 
-    res
-      .status(200)
-      .json({ message: "Password updated successfully", status: true });
+    res.status(200).json({
+      message: "Password updated successfully",
+      status: true,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message, status: false });
   }
 };
 
-module.exports = UpdatePassword;
+module.exports = updatePassword;

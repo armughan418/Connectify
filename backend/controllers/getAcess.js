@@ -2,29 +2,45 @@ const jwt = require("jsonwebtoken");
 
 const getAccess = async (req, res) => {
   try {
-    const authHeader = req.headers.authorization || "";
-    const headerToken = authHeader.startsWith("Bearer ")
-      ? authHeader.split(" ")[1]
+    const userCookieToken = req.cookies?.token;
+
+    const headerToken = req.headers.authorization?.startsWith("Bearer ")
+      ? req.headers.authorization.split(" ")[1]
       : null;
+    const token = headerToken || userCookieToken;
 
-    const cookieToken = req.cookies?.token;
-    const token = headerToken || cookieToken;
-
-    if (!token)
-      return res
-        .status(401)
-        .json({ message: "No token provided", status: false });
+    if (!token) {
+      return res.status(401).json({
+        status: false,
+        message: "No token provided",
+      });
+    }
 
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_KEY);
+
+    const isAdmin = headerToken && decoded.role === "admin" ? true : false;
+
+    if (!headerToken && decoded.role === "admin") {
+      return res.status(403).json({
+        status: false,
+        message: "Admin access requires login",
+      });
+    }
+
     res.status(200).json({
-      message: "Valid Token",
       status: true,
+      message: "Valid Token",
       email: decoded.email,
-      isAdmin: decoded.isAdmin || false,
+      id: decoded.id,
+      role: decoded.role,
+      isAdmin,
     });
   } catch (error) {
-    console.log("Error in getAccess controller:", error);
-    res.status(401).json({ message: "Invalid Token", status: false });
+    console.error("Error in getAccess:", error);
+    res.status(401).json({
+      status: false,
+      message: "Invalid or expired token",
+    });
   }
 };
 

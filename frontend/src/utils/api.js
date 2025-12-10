@@ -8,46 +8,49 @@ const api = () => {
     verifyOtp: `${local}/api/user/otp/verify`,
     updatePassword: `${local}/api/user/update/password`,
     getAcess: `${local}/api/user/get/access`,
-    adminStat: `${local}/api/admin/stats`,
 
-    getUsers: `${local}/api/user/`,
-    updateUser: (id) => `${local}/api/user/${id}`,
-    deleteUser: (id) => `${local}/api/user/${id}`,
-
-    addProduct: `${local}/api/products/add`,
-    getProducts: `${local}/api/products`,
-    getSingleProduct: (id) => `${local}/api/products/${id}`,
-    updateProduct: (id) => `${local}/api/products/update/${id}`,
-    deleteProduct: (id) => `${local}/api/products/delete/${id}`,
-
-    // Cart
-    addToCart: `${local}/api/cart/add`,
-    getCart: `${local}/api/cart`,
-    updateCartItem: `${local}/api/cart/update`,
-    removeFromCart: (productId) => `${local}/api/cart/remove/${productId}`,
-
-    getOrders: `${local}/api/orders`,
-    getMyOrders: `${local}/api/orders/myorders`,
-    createOrder: `${local}/api/orders/create`,
-    getOrder: (id) => `${local}/api/orders/${id}`,
-    updateOrder: (id) => `${local}/api/orders/${id}`,
-    updateOrderStatus: (id) => `${local}/api/orders/${id}/status`,
-    deleteOrder: (id) => `${local}/api/orders/${id}`,
-
-    getReviews: (productId) => `${local}/api/reviews/${productId}`,
-    addReview: `${local}/api/reviews`,
-    deleteReview: (id) => `${local}/api/reviews/${id}`,
-    // Carousel
-    getCarousel: `${local}/api/carousel`,
-    addCarouselImage: `${local}/api/carousel/add`,
-    updateCarouselImage: (id) => `${local}/api/carousel/update/${id}`,
-    deleteCarouselImage: (id) => `${local}/api/carousel/delete/${id}`,
-    // example api() shape (you already have a util)
-    // forgetPassword: "/api/user/forget-password",
-    // verifyOtp: "/api/user/verify-otp",
-    // updatePassword: "/api/user/update-password", // adjust if your route differs
     getUserProfile: `${local}/api/user/profile`,
     updateUserProfile: `${local}/api/user/profile`,
+    getUserById: (id) => `${local}/api/user/${id}`,
+    searchUsers: (query) =>
+      `${local}/api/user/search?query=${encodeURIComponent(query)}`,
+    getUsers: `${local}/api/auth/users`,
+    updateUser: (id) => `${local}/api/auth/users/${id}`,
+    deleteUser: (id) => `${local}/api/auth/users/${id}`,
+
+    addFriend: `${local}/api/friend/add`,
+    removeFriend: `${local}/api/friend/remove`,
+    getFriends: `${local}/api/friend/list`,
+    acceptFriend: `${local}/api/friend/accept`,
+
+    createPost: `${local}/api/post/create`,
+    getAllPosts: `${local}/api/post/all`,
+    getPostById: (id) => `${local}/api/post/${id}`,
+    updatePost: (id) => `${local}/api/post/${id}/update`,
+    deletePost: (id) => `${local}/api/post/${id}/delete`,
+    likePost: (id) => `${local}/api/post/${id}/like`,
+    unlikePost: (id) => `${local}/api/post/${id}/unlike`,
+
+    createComment: `${local}/api/comment/create`,
+    getCommentsByPost: (postId) => `${local}/api/comment/post/${postId}`,
+    getCommentById: (id) => `${local}/api/comment/${id}`,
+    updateComment: (id) => `${local}/api/comment/${id}/update`,
+    deleteComment: (id) => `${local}/api/comment/${id}/delete`,
+
+    sendMessage: `${local}/api/message/send`,
+    getMessages: (friendId) => `${local}/api/message/${friendId}`,
+    getConversations: `${local}/api/message/conversations`,
+    getUnreadCount: `${local}/api/message/unread/count`,
+
+    reportPost: `${local}/api/report`,
+    getPendingReports: `${local}/api/report/pending`,
+    getAllReports: `${local}/api/report/all`,
+    resolveReport: (id) => `${local}/api/report/${id}`,
+
+    adminStat: `${local}/api/auth/stats`,
+
+    getUploadSignature: `${local}/api/cloudinary/signature`,
+    uploadFile: `${local}/api/cloudinary/upload`,
   };
 
   return list;

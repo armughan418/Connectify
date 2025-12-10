@@ -1,6 +1,5 @@
 const User = require("../models/user");
 
-// =============== LOGGED-IN USER PROFILE ===============
 const getUserProfile = async (req, res) => {
   try {
     if (!req.user || !req.user.id) {
@@ -24,7 +23,7 @@ const updateUserProfile = async (req, res) => {
   try {
     const { name, email, phone, address, profilePhoto, coverPhoto } = req.body;
     const updateData = {};
-    
+
     if (name) updateData.name = name;
     if (email) updateData.email = email;
     if (phone) updateData.phone = phone;
@@ -32,11 +31,10 @@ const updateUserProfile = async (req, res) => {
     if (profilePhoto !== undefined) updateData.profilePhoto = profilePhoto;
     if (coverPhoto !== undefined) updateData.coverPhoto = coverPhoto;
 
-    const user = await User.findByIdAndUpdate(
-      req.user.id,
-      updateData,
-      { new: true, runValidators: true }
-    ).select("-password");
+    const user = await User.findByIdAndUpdate(req.user.id, updateData, {
+      new: true,
+      runValidators: true,
+    }).select("-password");
 
     res.json({ status: true, user, message: "Profile updated successfully" });
   } catch (err) {
@@ -45,12 +43,64 @@ const updateUserProfile = async (req, res) => {
   }
 };
 
-// =============== ADMIN: MANAGE USERS ===============
+const getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res
+        .status(400)
+        .json({ status: false, message: "User ID is required" });
+    }
+
+    const user = await User.findById(id).select(
+      "name email phone address createdAt profilePhoto coverPhoto"
+    );
+
+    if (!user) {
+      return res.status(404).json({ status: false, message: "User not found" });
+    }
+
+    res.json({ status: true, user });
+  } catch (err) {
+    console.error("Get User By ID Error:", err);
+    res.status(500).json({ status: false, message: err.message });
+  }
+};
+
+const searchUsers = async (req, res) => {
+  try {
+    const { query } = req.query;
+    const currentUserId = req.user?.id;
+
+    if (!query || query.trim() === "") {
+      return res.json({ status: true, users: [] });
+    }
+
+    const searchRegex = new RegExp(query.trim(), "i");
+    const users = await User.find({
+      $and: [
+        {
+          $or: [{ name: searchRegex }, { email: searchRegex }],
+        },
+        { _id: { $ne: currentUserId } },
+      ],
+    })
+      .select("name email profilePhoto coverPhoto createdAt")
+      .limit(50);
+
+    res.json({ status: true, users });
+  } catch (err) {
+    console.error("Search Users Error:", err);
+    res.status(500).json({ status: false, message: err.message });
+  }
+};
+
 const getAllUsers = async (req, res) => {
   try {
     const users = await User.find(
       {},
-      "name email role phone address createdAt"
+      "name email role phone address createdAt profilePhoto coverPhoto"
     );
     res.json({ status: true, users });
   } catch (err) {
@@ -109,7 +159,9 @@ const deleteUser = async (req, res) => {
 module.exports = {
   getUserProfile,
   updateUserProfile,
+  getUserById,
   getAllUsers,
   updateUser,
   deleteUser,
+  searchUsers,
 };

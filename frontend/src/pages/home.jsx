@@ -1,181 +1,131 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Footer from "../components/footer";
-import Carousel from "../components/caroseul";
-import api from "../utils/api";
-import axios from "axios";
-import { toast } from "react-toastify";
-import StarRating from "../components/StarRating";
+import { Heart, MessageCircle, Share2, Loader, Plus } from "lucide-react";
+import authService from "../services/authService";
 
-export default function Home() {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+function Home() {
   const navigate = useNavigate();
-
-  // Fetch products and their ratings
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get(api().getProducts);
-      if (res.data?.status) {
-        const productsList = res.data.products || [];
-
-        // Fetch reviews for each product to calculate avgRating
-        const productsWithRating = await Promise.all(
-          productsList.map(async (product) => {
-            try {
-              const reviewsRes = await axios.get(api().getReviews(product._id));
-              const reviews = reviewsRes.data?.reviews || [];
-              const avgRating =
-                reviews.length > 0
-                  ? reviews.reduce((sum, r) => sum + r.rating, 0) /
-                    reviews.length
-                  : 0;
-              return { ...product, avgRating };
-            } catch {
-              return { ...product, avgRating: 0 };
-            }
-          })
-        );
-
-        setProducts(productsWithRating);
-      } else {
-        toast.error(res.data.message || "Failed to fetch products");
-      }
-    } catch (err) {
-      toast.error("Failed to fetch products");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [loading, setLoading] = useState(true);
+  const [stories, setStories] = useState([]);
+  const [posts, setPosts] = useState([]);
+  const [chats, setChats] = useState([]);
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const handleProductClick = (id) => {
-    navigate(`/product/${id}`);
-  };
-
-  const handleAddToCart = async (productId) => {
-    try {
-      const token = localStorage.getItem("authToken");
-      
-      if (!token) {
-        toast.error("Please login to add items to cart");
-        navigate("/login");
-        return;
-      }
-
-      await axios.post(
-        api().addToCart,
-        { productId, quantity: 1 },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      toast.success("Added to cart");
-      // Dispatch event to update cart count in navbar
-      window.dispatchEvent(new Event('cartUpdated'));
-    } catch (err) {
-      const errorMsg = err.response?.data?.message || "Failed to add to cart";
-      toast.error(errorMsg);
-      
-      // If unauthorized, redirect to login
-      if (err.response?.status === 401) {
-        localStorage.removeItem("authToken");
-        navigate("/login");
-      }
+    const currentUser = authService.getCurrentUser();
+    if (currentUser) {
+      navigate("/feed");
+    } else {
+      setLoading(false);
     }
-  };
+  }, [navigate]);
 
   if (loading) {
     return (
-      <div className="p-10 text-center text-orange-500 font-bold">
-        Loading...
+      <div className="flex items-center justify-center h-screen">
+        <Loader className="animate-spin" size={40} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-orange-50">
-      <Carousel />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+      <nav className="bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <h1 className="text-2xl font-bold">📱 Connectify</h1>
+          <div className="flex gap-4">
+            <button
+              onClick={() => navigate("/login")}
+              className="px-6 py-2 bg-white text-blue-600 rounded-lg font-semibold hover:bg-gray-100 transition"
+            >
+              Login
+            </button>
+            <button
+              onClick={() => navigate("/signup")}
+              className="px-6 py-2 bg-blue-700 rounded-lg font-semibold hover:bg-blue-800 transition"
+            >
+              Sign Up
+            </button>
+          </div>
+        </div>
+      </nav>
 
-      <div className="max-w-6xl mx-auto p-6">
-        <h2 className="text-3xl font-bold text-orange-600 mb-6">
-          Featured Products
-        </h2>
-
-        {products.length === 0 ? (
-          <p className="text-gray-500 text-center">No products found.</p>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {products.map((product) => (
+      <div className="max-w-7xl mx-auto px-6 py-20 flex gap-6">
+        <div className="flex-1 max-w-3xl">
+          <div className="flex gap-4 mb-6 overflow-x-auto pb-2">
+            <div className="w-24 h-36 bg-white shadow-md rounded-xl flex flex-col items-center justify-center cursor-pointer hover:shadow-lg transition">
+              <div className="w-12 h-12 bg-indigo-600 text-white flex items-center justify-center rounded-full mb-2">
+                <Plus size={28} />
+              </div>
+              <p className="text-sm font-medium text-gray-700">Add Story</p>
+            </div>
+            {stories.map((story) => (
               <div
-                key={product._id}
-                className="bg-white rounded-2xl shadow-lg p-4 hover:shadow-xl transition relative flex flex-col"
+                key={story.id}
+                className="w-24 h-36 bg-white shadow-md rounded-xl overflow-hidden cursor-pointer hover:shadow-lg transition"
               >
-                {/* Clickable image and title to navigate */}
-                <div
-                  onClick={() => handleProductClick(product._id)}
-                  className="cursor-pointer"
-                >
-                  <div className="bg-gray-50 rounded-xl p-4 flex items-center justify-center">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="h-48 object-contain"
-                    />
-                  </div>
-
-                  <h3 className="font-semibold text-lg mt-3 text-gray-800">
-                    {product.name}
-                  </h3>
-
-                  <p className="text-gray-500 text-sm mt-1 line-clamp-2">
-                    {product.description}
-                  </p>
-
-                  <div className="flex items-center gap-2 mt-2">
-                    <StarRating rating={product.avgRating ?? 0} size={16} />
-                    <span className="text-gray-600 text-sm">
-                      {(product.avgRating ?? 0).toFixed(1)}
-                    </span>
-                  </div>
-
-                  {/* Old Price (if exists) */}
-                  {product.oldPrice && product.oldPrice > product.price && (
-                    <p className="text-gray-400 text-sm line-through">
-                      Rs{" "}
-                      {Number(product.oldPrice).toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
-                    </p>
-                  )}
-
-                  {/* Current Price */}
-                  <p className="text-orange-600 font-bold text-xl mt-1">
-                    Rs{" "}
-                    {Number(product.price).toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </p>
-                </div>
-
-                {/* Add to Cart Button */}
-                <button
-                  onClick={() => handleAddToCart(product._id)}
-                  className="mt-4 bg-orange-600 hover:bg-orange-700 text-white py-2 px-4 rounded-xl shadow-md font-semibold transition"
-                >
-                  Add to Cart
-                </button>
+                <img
+                  src={story.image}
+                  alt="story"
+                  className="w-full h-full object-cover"
+                />
               </div>
             ))}
           </div>
-        )}
-      </div>
 
-      <Footer />
+          <div className="flex flex-col gap-6">
+            {posts.map((post) => (
+              <div key={post.id} className="bg-white shadow-md rounded-xl p-4">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
+                  <div>
+                    <h3 className="font-semibold text-gray-800">{post.user}</h3>
+                    <p className="text-sm text-gray-500">{post.username}</p>
+                  </div>
+                </div>
+                {post.type === "image" && (
+                  <img
+                    src={post.media}
+                    alt="post"
+                    className="w-full rounded-xl mb-3"
+                  />
+                )}
+                {post.type === "video" && (
+                  <video controls className="w-full rounded-xl mb-3">
+                    <source src={post.media} />
+                  </video>
+                )}
+                <div className="flex justify-around text-gray-600 pt-3 border-t">
+                  <button className="flex items-center gap-2 hover:text-red-500 transition">
+                    <Heart size={20} /> Like
+                  </button>
+                  <button className="flex items-center gap-2 hover:text-blue-500 transition">
+                    <MessageCircle size={20} /> Comment
+                  </button>
+                  <button className="flex items-center gap-2 hover:text-green-600 transition">
+                    <Share2 size={20} /> Share
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="hidden lg:block w-72 bg-white shadow-md rounded-xl h-fit p-4 sticky top-6">
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Chats</h2>
+          <div className="flex flex-col gap-3">
+            {chats.map((chat) => (
+              <div
+                key={chat.id}
+                className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 cursor-pointer"
+              >
+                <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
+                <p className="font-medium text-gray-800">{chat.name}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
+export default Home;

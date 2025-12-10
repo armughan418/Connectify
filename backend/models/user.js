@@ -28,11 +28,11 @@ const userSchema = new mongoose.Schema(
       },
     ],
     profilePhoto: {
-      type: String, // Cloudinary URL
+      type: String,
       default: null,
     },
     coverPhoto: {
-      type: String, // Cloudinary URL
+      type: String,
       default: null,
     },
   },

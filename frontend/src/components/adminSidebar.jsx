@@ -36,7 +36,6 @@ function AdminSidebar({ children }) {
 
   return (
     <div className="flex h-screen bg-orange-50">
-      {/* Sidebar */}
       <div
         className={`${
           sidebarOpen ? "w-64" : "w-20"
@@ -66,9 +65,7 @@ function AdminSidebar({ children }) {
         </nav>
       </div>
 
-      {/* Main Area */}
       <div className="flex-1 flex flex-col">
-        {/* Navbar */}
         <header className="flex justify-between items-center bg-white/70 backdrop-blur-md border-b px-6 py-4 shadow-sm relative z-20">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -109,7 +106,6 @@ function AdminSidebar({ children }) {
           </div>
         </header>
 
-        {/* Content */}
         <main className="flex-1 overflow-auto">{children}</main>
       </div>
     </div>

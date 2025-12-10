@@ -11,7 +11,7 @@ const sendEmail = async (to, subject, html) => {
     });
 
     const mailOptions = {
-      from: `"Shopverse" <${process.env.SMTP_USER}>`,
+      from: `"Connectify" <${process.env.SMTP_USER}>`,
       to,
       subject,
       html,

@@ -16,7 +16,7 @@ const authMiddleware = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_KEY);
-    req.user = decoded;
+    req.user = decoded; // id, email, role
     next();
   } catch (error) {
     if (error.name === "TokenExpiredError") {
@@ -24,17 +24,17 @@ const authMiddleware = (req, res, next) => {
         status: false,
         message: "Session expired: Please login again",
       });
-    } else if (error.name === "JsonWebTokenError") {
+    }
+    if (error.name === "JsonWebTokenError") {
       return res.status(403).json({
         status: false,
-        message: "Invalid authentication token: Please login again",
+        message: "Invalid authentication token",
       });
     }
-    
-    console.error("JWT verification error:", error);
+
     return res.status(403).json({
       status: false,
-      message: "Authentication failed: Invalid or corrupted token",
+      message: "Authentication failed",
     });
   }
 };

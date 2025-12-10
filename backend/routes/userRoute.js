@@ -11,9 +11,10 @@ const getAccess = require("../controllers/getAcess");
 const {
   getUserProfile,
   updateUserProfile,
+  getUserById,
+  searchUsers,
 } = require("../controllers/userControllers");
 
-// Authentication routes
 router.post("/register", register);
 router.post("/login", login);
 router.post("/forget/password", forgetPassword);
@@ -21,8 +22,9 @@ router.post("/otp/verify", verifyOtp);
 router.patch("/update/password", updatePassword);
 router.get("/get/access", getAccess);
 
-// Profile routes (protected)
 router.get("/profile", userAuth, getUserProfile);
 router.put("/profile", userAuth, updateUserProfile);
+router.get("/search", userAuth, searchUsers);
+router.get("/:id", userAuth, getUserById);
 
 module.exports = router;

@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const login = async (req, res) => {
-  const { email, password, role } = req.body;
+  const { email, password } = req.body;
 
   try {
     if (!email || !password) {
@@ -20,13 +20,6 @@ const login = async (req, res) => {
       return res.status(404).json({
         status: false,
         message: "User not found",
-      });
-    }
-
-    if (role && role !== user.role) {
-      return res.status(403).json({
-        status: false,
-        message: "Invalid role selected",
       });
     }
 
@@ -58,7 +51,7 @@ const login = async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       status: true,
       message: "Login successful",
       token: accessToken,

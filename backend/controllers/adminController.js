@@ -1,6 +1,4 @@
 const User = require("../models/user");
-
-// Optional models - graceful handling if missing
 let Post = null;
 let Comment = null;
 let Report = null;
@@ -25,12 +23,10 @@ try {
 
 const getAdminStats = async (req, res) => {
   try {
-    // Only Admin Access
     if (!req.user || req.user.role !== "admin") {
       return res.status(403).json({ status: false, message: "Admins only" });
     }
 
-    // --- TOTAL COUNTS ---
     const totalUsers = await User.countDocuments();
     const totalPosts = Post ? await Post.countDocuments() : 0;
     const totalComments = Comment ? await Comment.countDocuments() : 0;
@@ -38,7 +34,6 @@ const getAdminStats = async (req, res) => {
       ? await Report.countDocuments({ status: "pending" })
       : 0;
 
-    // --- TODAY'S DATA ---
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
 
@@ -51,7 +46,6 @@ const getAdminStats = async (req, res) => {
         })
       : 0;
 
-    // --- POSTS BY CATEGORY (optional) ---
     let postsByCategory = {};
     if (Post) {
       const postsCategoryAgg = await Post.aggregate([
@@ -60,13 +54,11 @@ const getAdminStats = async (req, res) => {
       postsCategoryAgg.forEach((c) => (postsByCategory[c._id] = c.count));
     }
 
-    // --- MONTHLY STATS (Last 6 months) ---
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
     sixMonthsAgo.setDate(1);
     sixMonthsAgo.setHours(0, 0, 0, 0);
 
-    // Monthly new users + posts
     const monthlyAgg = await User.aggregate([
       { $match: { createdAt: { $gte: sixMonthsAgo } } },
       {
@@ -124,7 +116,6 @@ const getAdminStats = async (req, res) => {
   }
 };
 
-// Get all users (admin only)
 const getAllUsers = async (req, res) => {
   try {
     if (!req.user || req.user.role !== "admin") {
@@ -135,7 +126,7 @@ const getAllUsers = async (req, res) => {
 
     const users = await User.find(
       {},
-      "name email role phone address createdAt"
+      "name email role phone address createdAt profilePhoto"
     );
     res.json({ status: true, users });
   } catch (err) {
@@ -143,7 +134,6 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-// Update user (admin only)
 const updateUser = async (req, res) => {
   try {
     if (!req.user || req.user.role !== "admin") {
@@ -180,7 +170,6 @@ const updateUser = async (req, res) => {
   }
 };
 
-// Delete user (admin only)
 const deleteUser = async (req, res) => {
   try {
     if (!req.user || req.user.role !== "admin") {

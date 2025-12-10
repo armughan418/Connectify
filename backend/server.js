@@ -25,7 +25,6 @@ const io = socketIO(server, {
   },
 });
 
-// ---------- MIDDLEWARE ----------
 app.use(
   cors({
     origin: "http://localhost:3000",
@@ -48,30 +47,25 @@ app.use("/api/comment", commentRoute);
 app.use("/api/message", messageRoute);
 app.use("/api/report", reportRoute);
 
-// ---------- SOCKET.IO REAL-TIME MESSAGING ----------
-const userSockets = {}; // Map userId to socket ID
+const userSockets = {};
 
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
-  // Register user
   socket.on("register", (data) => {
-    // Handle both object {userId} and plain string userId
     const userId = typeof data === "string" ? data : data?.userId || data;
     if (userId) {
       userSockets[userId] = socket.id;
-      socket.join(userId); // Join room with user ID
+      socket.join(userId);
       console.log(`User ${userId} joined room ${userId}`);
     }
   });
 
-  // Send message
   socket.on("sendMessage", (data) => {
     const { senderId, receiverId, content, message } = data;
     const receiverSocketId = userSockets[receiverId];
 
     if (receiverSocketId) {
-      // Emit to both "receiveMessage" and "message" for compatibility
       const messageData = {
         senderId,
         receiverId,
@@ -80,14 +74,13 @@ io.on("connection", (socket) => {
         message,
       };
       io.to(receiverId).emit("receiveMessage", messageData);
-      io.to(receiverId).emit("message", messageData); // Also emit as "message" for frontend compatibility
+      io.to(receiverId).emit("message", messageData);
       console.log(`Message sent from ${senderId} to ${receiverId}`);
     } else {
       console.log(`Receiver ${receiverId} is offline`);
     }
   });
 
-  // Typing indicator
   socket.on("typing", (data) => {
     const { senderId, receiverId } = data;
     io.to(receiverId).emit("userTyping", { senderId });
@@ -98,7 +91,6 @@ io.on("connection", (socket) => {
     io.to(receiverId).emit("userStoppedTyping", { senderId });
   });
 
-  // Disconnect
   socket.on("disconnect", () => {
     for (const userId in userSockets) {
       if (userSockets[userId] === socket.id) {
@@ -110,12 +102,10 @@ io.on("connection", (socket) => {
   });
 });
 
-// ---------- TEST ROUTE ----------
 app.get("/", (req, res) => {
   res.json({ message: "Server is running successfully" });
 });
 
-// ---------- ERROR HANDLER ----------
 app.use((err, req, res, next) => {
   console.error("Error:", err);
   const statusCode = err.statusCode || 500;
@@ -123,9 +113,7 @@ app.use((err, req, res, next) => {
   res.status(statusCode).json({ success: false, message });
 });
 
-// ---------- DATABASE CONNECTION ----------
 getConnection();
 
-// ---------- START SERVER ----------
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

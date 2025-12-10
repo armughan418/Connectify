@@ -34,6 +34,51 @@ function SignupDashboard() {
       return;
     }
 
+    const getPasswordMinLength = () => {
+      const saved = localStorage.getItem("passwordMinLength");
+      if (saved) {
+        try {
+          return parseInt(JSON.parse(saved)) || 6;
+        } catch {
+          return 6;
+        }
+      }
+      return 6;
+    };
+
+    const getRequireStrongPassword = () => {
+      const saved = localStorage.getItem("requireStrongPassword");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {
+          return false;
+        }
+      }
+      return false;
+    };
+
+    const minLength = getPasswordMinLength();
+    if (password.length < minLength) {
+      toast.error(`Password must be at least ${minLength} characters long.`);
+      return;
+    }
+
+    const requireStrong = getRequireStrongPassword();
+    if (requireStrong) {
+      const hasUpperCase = /[A-Z]/.test(password);
+      const hasLowerCase = /[a-z]/.test(password);
+      const hasNumber = /[0-9]/.test(password);
+      const hasSpecialChar = /[!@#$%^&*]/.test(password);
+
+      if (!hasUpperCase || !hasLowerCase || !hasNumber || !hasSpecialChar) {
+        toast.error(
+          "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (!@#$%^&*)."
+        );
+        return;
+      }
+    }
+
     try {
       setLoading(true);
       const response = await fetch(api().registerUser, {
@@ -61,7 +106,9 @@ function SignupDashboard() {
       setLoading(false);
 
       if (response.ok && data.status) {
-        toast.success(data.message || "Signup successful! Redirecting to login...");
+        toast.success(
+          data.message || "Signup successful! Redirecting to login..."
+        );
         setTimeout(() => {
           navigate("/login");
         }, 1500);
@@ -73,10 +120,11 @@ function SignupDashboard() {
     } catch (error) {
       setLoading(false);
       console.error("Signup Error:", error);
-      
-      // Better error messages
+
       if (error.message === "Failed to fetch" || error.name === "TypeError") {
-        toast.error("Cannot connect to server. Please check if backend is running on port 5000.");
+        toast.error(
+          "Cannot connect to server. Please check if backend is running on port 5000."
+        );
       } else {
         toast.error(error.message || "Something went wrong. Please try again.");
       }
@@ -85,12 +133,9 @@ function SignupDashboard() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-200 via-white to-purple-200 relative overflow-hidden">
-      {/* Floating Background Effects */}
       <div className="absolute w-60 h-60 bg-indigo-300 opacity-30 rounded-full blur-3xl top-10 left-10" />
       <div className="absolute w-72 h-72 bg-purple-300 opacity-30 rounded-full blur-3xl bottom-10 right-10" />
-
       <div className="flex w-full max-w-5xl bg-white/60 backdrop-blur-2xl rounded-3xl shadow-[0_8px_40px_rgba(0,0,0,0.1)] overflow-hidden border border-white/40">
-        {/* LEFT SECTION */}
         <div className="hidden lg:flex flex-col justify-center w-1/2 p-14 bg-gradient-to-br from-indigo-50/60 to-purple-50/60 backdrop-blur-xl">
           <h1 className="text-4xl font-extrabold text-indigo-800 leading-tight drop-shadow-sm">
             Join our community,
@@ -102,7 +147,6 @@ function SignupDashboard() {
           </p>
         </div>
 
-        {/* RIGHT SECTION */}
         <div className="w-full lg:w-1/2 p-12">
           <h2 className="text-3xl font-bold text-slate-900 text-center mb-3">
             Sign Up
@@ -111,7 +155,6 @@ function SignupDashboard() {
             Fill in your details to create a new account.
           </p>
 
-          {/* FORM */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <input
               type="text"

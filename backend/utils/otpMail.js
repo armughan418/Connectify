@@ -6,7 +6,7 @@ const sendOtpEmail = async (otp, userEmail) => {
     <div style="font-family: Arial, sans-serif; text-align:center; padding: 20px;">
       <h2>Password Reset Request</h2>
       <p>Hello! Use the OTP below to reset your password:</p>
-      <div style="font-size: 24px; font-weight:bold; background: #ff6b35; color: white; padding: 10px 20px; display:inline-block; border-radius:8px;">
+      <div style="font-size: 24px; font-weight:bold; background: #1D4ED8; color: white; padding: 10px 20px; display:inline-block; border-radius:8px;">
         ${otp}
       </div>
       <p>This OTP is valid for 1 minute. Ignore if you didn't request.</p>

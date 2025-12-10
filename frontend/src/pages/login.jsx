@@ -46,8 +46,8 @@ function Login() {
           result.data?.accessToken;
 
         if (token) {
-          localStorage.setItem("token", token); // Store as "token" for consistency
-          localStorage.setItem("authToken", token); // Also store as "authToken" for backward compatibility
+          localStorage.setItem("token", token);
+          localStorage.setItem("authToken", token);
         }
 
         if (result.user) {
@@ -62,12 +62,18 @@ function Login() {
             isAdmin: result.user.isAdmin || result.user.role === "admin",
           };
           localStorage.setItem("user", JSON.stringify(userData));
-        }
 
-        if (role === "admin") {
-          navigate("/admin-dashboard");
+          if (result.user.role === "admin" || result.user.isAdmin) {
+            navigate("/admin-dashboard");
+          } else {
+            navigate("/feed");
+          }
         } else {
-          navigate("/");
+          if (role === "admin") {
+            navigate("/admin-dashboard");
+          } else {
+            navigate("/feed");
+          }
         }
       }
     } catch (error) {
@@ -82,12 +88,10 @@ function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-200 via-white to-purple-200 relative overflow-hidden">
-      {/* Floating Background Effects */}
       <div className="absolute w-60 h-60 bg-indigo-300 opacity-30 rounded-full blur-3xl top-10 left-10" />
       <div className="absolute w-72 h-72 bg-purple-300 opacity-30 rounded-full blur-3xl bottom-10 right-10" />
 
       <div className="flex w-full max-w-5xl bg-white/60 backdrop-blur-2xl rounded-3xl shadow-[0_8px_40px_rgba(0,0,0,0.1)] overflow-hidden border border-white/40">
-        {/* LEFT SECTION */}
         <div className="hidden lg:flex flex-col justify-center w-1/2 p-14 bg-gradient-to-br from-indigo-50/60 to-purple-50/60 backdrop-blur-xl">
           <h1 className="text-4xl font-extrabold text-indigo-800 leading-tight drop-shadow-sm">
             More than just friends,
@@ -98,7 +102,6 @@ function Login() {
           </p>
         </div>
 
-        {/* RIGHT SECTION */}
         <div className="w-full lg:w-1/2 p-12">
           <h2 className="text-3xl font-bold text-slate-900 text-center mb-3">
             Sign In
@@ -107,9 +110,7 @@ function Login() {
             Welcome back! Please sign in to continue.
           </p>
 
-          {/* FORM */}
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Role */}
             <div>
               <label className="block text-slate-700 font-medium mb-1">
                 Role
@@ -124,7 +125,6 @@ function Login() {
               </select>
             </div>
 
-            {/* Email */}
             <div>
               <label className="block text-slate-700 font-medium mb-1">
                 Email
@@ -138,7 +138,6 @@ function Login() {
               />
             </div>
 
-            {/* Password */}
             <div>
               <label className="block text-slate-700 font-medium mb-1">
                 Password
@@ -152,7 +151,6 @@ function Login() {
               />
             </div>
 
-            {/* Login Button */}
             <button
               type="submit"
               className="w-full bg-indigo-600 text-white font-semibold py-3 rounded-xl shadow-lg hover:bg-indigo-700 hover:shadow-xl transition-transform duration-200 hover:scale-[1.02]"
@@ -160,7 +158,6 @@ function Login() {
               {loading ? "Loading..." : "Login"}
             </button>
 
-            {/* Bottom Links */}
             <div className="flex justify-between pt-2 text-sm">
               <button
                 type="button"
